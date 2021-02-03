@@ -83,12 +83,49 @@ with open('stt.txt') as p:
     _list = [i.strip() for i in p]
     print(_list)
 
-# Протокол менеджеров контекста состоит из двух методов.
+# Протокол менеджеров контекста состоит из двух методов
 # - Метод __enter__ инициализирует контекст, например, открывает файл или захватывает мьютекс. Значение,
-# 	возвращаемое методом __enter__, записывается по имени, указанному после оператора as.
+# 	возвращаемое методом __enter__, записывается по имени, указанному после оператора as
 # - Метод __exit__ вызывается после выполнения тела оператора with. Метод принимает три аргумента:
 # 		1. тип исключения,
 # 		2. само исключение и
 # 		3. объект типа traceback.
-# 	Если в процессе исполнения тела оператора with было поднятно исключение, метод __exit__ может подавить его, вернув True.
+# 	Если в процессе исполнения тела оператора with было поднятно исключение, метод __exit__ может подавить его, вернув True
 # - Экземпляр любого класса, реализующего эти два метода, является менеджером контекста
+# - Модуль tempfile реализует классы для работы с временными файлами
+
+import os
+class cd:
+	def __init__(self, path):
+		self.path = path
+
+	def __enter__(self):
+		self.saved_cwd = os.getcwd()
+		os.chdir(self.path)
+
+	def __exit__(self, *exc_info):
+		os.chdir(self.saved_cwd)
+
+print(os.getcwd()) # -> ./csc/python
+with cd("/tmp"):
+	print(os.getcwd()) # -> /tmp
+
+# С помощью closing можно, например, безопасно работать с HTTP ресурсами
+from contextlib import closing
+from urllib.request import urlopen
+url = "http://compscicenter.ru"
+with closing(urlopen(url)) as page:
+	print(len(page))
+
+# Менеджер контекста redirect_stdout позволяет локально перехватывать вывод в стандартный поток
+from contextlib import redirect_stdout
+import io
+handle = io.StringIO()
+with redirect_stdout(handle):
+	print("Hello, World!")
+handle.getvalue() # -> 'Hello, World!\n'
+
+# С помощью менеджера контекста suppress можно локального подавить исключения указанных типов:
+from contextlib import suppress
+with suppress(FileNotFoundError):
+	os.remove("example.txt")
