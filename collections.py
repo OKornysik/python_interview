@@ -183,3 +183,15 @@ print(d)
 #	c -> Counter({'foo': 2, 'bar': 0})
 
 # Можно использовать heapq (куча), чтобы находить самые большие и маленькие итемы. Также можно запилить коллекцию с приоритетами
+from collections.abc import Iterable
+
+def flatten(items, ignore = (str, bytes)):
+    for x in items:
+        if isinstance(x, Iterable) and not isinstance(x, ignore):
+            yield from flatten(x)
+        else:
+            yield x
+            
+            
+a = [1, 2, [3, 4, [5, 6], 7]]
+print(list(flatten(a)))
