@@ -193,13 +193,45 @@ A().get_value()
 # Метод __getattr__ вызывается при попытке прочитать значение несуществующего атрибута        
 class Noop:
     def __getattr__(self, name): # перегрузили __getattr__ чтобы возвращал имя аргумента который мы пытались получить
-    return name # identity
+        return name # identity
 
 Noop().foobar # -> 'foobar'
 
+# Методы __setattr__ и __delattr__ позволяют управлять изменением значения и удалением атрибутов
+# В отличие от __getattr__ они вызываются для всех атрибутов, а не только для несуществующих
+# Пример, запрещающий изменять значение некоторых атрибутов
+class Guarded:
+    guarded = []
+    
+    def __setattr__(self, name, value):
+        assert name not in self.guarded
+        super().__setattr__(name, value)
+    
+class Noop(Guarded):
+    guarded = ["foobar"]
 
+    def __init__(self):
+        self.__dict__["foobar"] = 42
 
+class Noop:
+    some_attribute = 42
+    
+noop = Noop()
+getattr(noop, "some_attribute") # -> 42
+getattr(noop, "some_other_attribute", 100500) # -> 100500
+# Комплементарные функции setattr и delattr добавляют и удаляют атрибут
+setattr(noop, "some_other_attribute", 100500)
+delattr(noop, "some_other_attribute")
 
+# Метод __call__ позволяет “вызывать” экземпляры классов, имитируя интерфейс фнукций
+class Identity:
+    def __call__(self, x):
+        return x
 
+Identity()(42) # -> 42
 
-
+# - “Магические” методы позволяют уточнить поведение экземпляров класса в различных конструкциях языка
+# - Например, с помощью магического метода __str__ можно указать способ приведения экземпляра класса, а с
+#   помощью метода __hash__ — алгоритм хеширования состояния класса
+# - Мы рассмотрели небольшое подмножество “магических” методов, на самом деле их много больше: практически
+#   любое действие с экземпляром можно специализировать для конкретного класса
